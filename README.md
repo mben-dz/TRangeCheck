@@ -1,6 +1,6 @@
-# TRange<T> 
+# TRange<T>   
 
-Delphi TRange<T> Checker (clean design, easy to extend comparers)  
+Delphi **TRange<T>** Checker (clean design, easy to extend comparers)  
  ----  
  **Output Result:** 
  ![](https://github.com/mben-dz/TRangeCheck/blob/main/OutputResults.jpg)  
