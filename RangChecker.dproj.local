@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2024/12/21 10:04:42.000.023,=F:\2031\Projects\Unit1.pas</Transaction>
+    <Transaction>2025/01/10 08:23:29.027,F:\2032\Tools\TRangeCheck\RangChecker.dproj=F:\2031\Projects\Project1.dproj</Transaction>
+    <Transaction>2025/01/10 08:26:43.396,=F:\2032\Tools\TRangeCheck\Unit1.pas</Transaction>
+    <Transaction>2025/01/10 08:27:18.650,F:\2032\Tools\TRangeCheck\API.Utils.pas=F:\2032\Tools\TRangeCheck\Unit1.pas</Transaction>
+    <Transaction>2025/01/10 21:39:16.462,=F:\2032\Tools\TRangeCheck\Unit1.pas</Transaction>
+    <Transaction>2025/01/10 21:40:23.233,F:\2032\Tools\TRangeCheck\API\API.Objects.Comparer.pas=F:\2032\Tools\TRangeCheck\Unit1.pas</Transaction>
+  </Transactions>
+</BorlandProject>
