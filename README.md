@@ -28,194 +28,333 @@ git clone https://github.com/mben-dz/TRangeCheck.git
 
 Here’s how to use `TRange<T>` to check values in different types of ranges:
 
-### All Test Code in my console App "RangChecker.dpr"
+### TRange<T> Static Class
 
 ```pascal
-program RangChecker;
+unit API.Utils;
 
-{$APPTYPE CONSOLE}
-
-{$R *.res}
+interface
 
 uses
   System.SysUtils,
   System.Types,
-  DateUtils,
-  System.Generics.Defaults,
-  API.Utils in 'API\API.Utils.pas',
-  API.Objects.Comparer in 'API\API.Objects.Comparer.pas';
+  System.Generics.Defaults;
 
-var
-  gPoint1, gPoint2, gPoint3: TPoint;
+type
+  TRange<T> = class
+  public
+    // Check if a value is within the range [aMin, aMax] using a custom comparer
+    class function IsIn(const aValue, aMin, aMax: T; const aComparer: IComparer<T>): Boolean; overload; static;
 
-  gRec1, gRec2, gRec3: ICustomRecord;
-  gRecordComparer: IComparer<ICustomRecord>;
+    // Check if a value is within the range [aMin, aMax] using the default comparer
+    class function IsIn(const aValue, aMin, aMax: T): Boolean; overload; static;
+  end;
 
-  gProduct1, gProduct2, gProduct3: IProduct;
-  gProductComparer: IComparer<IProduct>;
+implementation
 
-  gClient1, gClient2, gClient3: IClient;
-  gClientComparer: IComparer<IClient>;
+{ TRange<T> }
 
-  gEndDateStr: string;
+class function TRange<T>.IsIn(const aValue, aMin, aMax: T; const aComparer: IComparer<T>): Boolean;
 begin
-  gPoint1 := TPoint.Create(1, 2);
-  gPoint2 := TPoint.Create(0, 0);
-  gPoint3 := TPoint.Create(3, 4);
+  Result := (aComparer.Compare(aValue, aMin) >= 0) and (aComparer.Compare(aValue, aMax) <= 0);
+end;
 
-  gRec1 := GetTCustomRecord('Low', 10);
-  gRec2 := GetTCustomRecord('Mid', 20);
-  gRec3 := GetTCustomRecord('High', 30);
-  gRecordComparer := TComparer<ICustomRecord>.Construct(CompareCustomRecord);
+class function TRange<T>.IsIn(const aValue, aMin, aMax: T): Boolean;
+begin
+  Result := IsIn(aValue, aMin, aMax, TComparer<T>.Default);
+end;
 
-  gProduct1 := GetTProduct(1, 10.0);
-  gProduct2 := GetTProduct(2, 20.0);
-  gProduct3 := GetTProduct(3, 30.0);
-  gProductComparer := TComparer<IProduct>.Construct(CompareProductByPrice);
-
-  gClient1 := GetTClient('Alice', 25);
-  gClient2 := GetTClient('Bob', 30);
-  gClient3 := GetTClient('Charlie', 35);
-  gClientComparer := TComparer<IClient>.Construct(CompareClientByAge);
-
-  with FormatSettings do begin
-    ShortDateFormat := 'DD MMMM YYYY';
-    CurrencyString := 'DA';
-    DecimalSeparator := ',';
-    ThousandSeparator := '.';
-  end;
-  gEndDateStr := DateToStr(Today +10, FormatSettings);
-
-  try
-    Writeln('-----------------<< Integer Tests >>--------------------------------');
-  {$REGION '  Integer Tests .. '}
-    if TRange<Integer>.IsIn(5, 1, 10) then
-      Writeln('5 is within the range [1, 10]')
-    else
-      Writeln('5 is outside the range [1, 10]');
-
-    if TRange<Integer>.IsIn(5, 6, 10) then
-      Writeln('5 is within the range [6, 10]')
-    else
-      Writeln('5 is outside the range [6, 10]');
-  {$ENDREGION}
-
-    Writeln('-----------------<< Int64 Tests >>--------------------------------');
-  {$REGION '  Int64 Tests .. '}
-    if TRange<Int64>.IsIn(5_000_000_000_000_000_001, 5_000_000_000_000_000_000, 5_000_000_000_000_000_010) then
-      Writeln('5_000_000_000_000_000_001 is within the range [5_000_000_000_000_000_000, 5_000_000_000_000_000_010]')
-    else
-      Writeln('5 is outside the range [5_000_000_000_000_000_000, 5_000_000_000_000_000_010]');
-
-    if TRange<Int64>.IsIn(5_000_000_000_000_000_000, 5_000_000_000_000_000_001, 5_000_000_000_000_000_010) then
-      Writeln('5_000_000_000_000_000_000 is within the range [5_000_000_000_000_000_001, 5_000_000_000_000_000_010]')
-    else
-      Writeln('5_000_000_000_000_000_000 is outside the range [5_000_000_000_000_000_001, 5_000_000_000_000_000_010]');
-  {$ENDREGION}
-
-    Writeln('-----------------<< Float Tests >>----------------------------------');
-  {$REGION '  Float Tests .. '}
-    if TRange<Double>.IsIn(7.5, 5.0, 10.0) then
-      Writeln('7.5 is within the range [5.0, 10.0]')
-    else
-      Writeln('7.5 is outside the range [5.0, 10.0]');
-
-    if TRange<Double>.IsIn(7.5, 7.6, 10.0) then
-      Writeln('7.5 is within the range [7.6, 10.0]')
-    else
-      Writeln('7.5 is outside the range [7.6, 10.0]');
-  {$ENDREGION}
-
-    Writeln('-----------------<< DateTime Tests >>------------------------------');
-  {$REGION '  DateTime Tests .. '}
-    if TRange<TDateTime>.IsIn(Today, Today, Today +10) then
-      Writeln('Today is within ['+Today.ToString+'] and ['+gEndDateStr+']')
-    else
-      Writeln('Today is outside ['+Today.ToString+'] and ['+gEndDateStr+']');
-
-    if TRange<TDateTime>.IsIn(Yesterday, Today, Today +10) then
-      Writeln('Yesterday is within ['+Today.ToString+'] and ['+gEndDateStr+']')
-    else
-      Writeln('Yesterday is outside ['+Today.ToString+'] and ['+gEndDateStr+']');
-  {$ENDREGION}
-
-    Writeln('-----------------<< String Tests >>--------------------------------');
-  {$REGION '  String Tests .. '}
-    if TRange<string>.IsIn('hello', 'alpha', 'zulu') then
-      Writeln('"hello" is within the range [alpha, zulu]')
-    else
-      Writeln('"hello" is outside the range [alpha, zulu]');
-
-    if TRange<string>.IsIn('zulu', 'alpha', 'omega') then
-      Writeln('"zulu" is within the range [alpha, omega]')
-    else
-      Writeln('"zulu" is outside the range [alpha, omega]');
-  {$ENDREGION}
-
-    Writeln('-----------------<< TPoint Tests >>-----------------------------');
-  {$REGION '  TPoint Tests .. '}
-    if TRange<TPoint>.IsIn(gPoint1, gPoint2, gPoint3, PointComparer) then
-      Writeln('Point(1, 2) is within the range [Point(0, 0), Point(3, 4)]')
-    else
-      Writeln('Point(1, 2) is outside the range [Point(0, 0), Point(3, 4)]');
-
-    if TRange<TPoint>.IsIn(Point(5, 5), Point(0, 0), Point(3, 4), PointComparer) then
-      Writeln('Point(5, 5) is within the range [Point(0, 0), Point(3, 4)]')
-    else
-      Writeln('Point(5, 5) is outside the range [Point(0, 0), Point(3, 4)]');
-  {$ENDREGION}
-
-    Writeln('-----------------<< TCustomRecord Tests >>-----------------------------');
-  {$REGION '  TCustomRecord Tests .. '}
-    if TRange<ICustomRecord>.IsIn(gRec2, gRec1, gRec3, gRecordComparer) then
-      Writeln('Record is within the range')
-    else
-      Writeln('Record is outside the range');
-
-    gRec2.New.Edit('Mid', 40);
-    if TRange<ICustomRecord>.IsIn(gRec2, gRec1, gRec3, gRecordComparer) then
-      Writeln('Record is within the range')
-    else
-      Writeln('Record is outside the range');
-  {$ENDREGION}
-
-    Writeln('-----------------<< TProduct Tests >>-----------------------------');
-  {$REGION '  TProduct Tests .. '}
-    if TRange<IProduct>.IsIn(gProduct2, gProduct1, gProduct3, gProductComparer) then
-      Writeln('Product price is within the range')
-    else
-      Writeln('Product price is outside the range');
-
-    gProduct2.New.Edit(2, 40);
-    if TRange<IProduct>.IsIn(gProduct2, gProduct1, gProduct3, gProductComparer) then
-      Writeln('Product price is within the range')
-    else
-      Writeln('Product price is outside the range');
-  {$ENDREGION}
-
-    Writeln('-----------------<< TClient Tests >>-----------------------------');
-  {$REGION '  TClient Tests .. '}
-    if TRange<IClient>.IsIn(gClient2, gClient1, gClient3, gClientComparer) then
-      Writeln('Client age is within the range')
-    else
-      Writeln('Client age is outside the range');
-
-    gClient2.New.Edit('Bob', 40);
-    if TRange<IClient>.IsIn(gClient2, gClient1, gClient3, gClientComparer) then
-      Writeln('Client age is within the range')
-    else
-      Writeln('Client age is outside the range');
-  {$ENDREGION}
-
-  except
-    on E: Exception do
-      Writeln(E.ClassName, ': ', E.Message);
-  end;
-
-  Readln;
 end.
 ```
+to put this  Super class in test i build a new console project:  
+this unit here act as my objects:  
+```pascal
+unit API.Objects.Comparer;
 
+interface
+uses
+  System.Types,
+  System.Generics.Defaults;
+
+type
+  ICustomRecord = interface; // Forward
+  ICustomRecordUpdate = interface
+    function Edit(const aName: string; const aValue: Integer): ICustomRecord;
+  end;
+  ICustomRecord = interface
+    function GetName: string;
+    function GetValue: Integer;
+    function GetCustomRecordUpdate: ICustomRecordUpdate;
+
+    property Name: string read GetName;
+    property Value: Integer read GetValue;
+
+    property New: ICustomRecordUpdate read GetCustomRecordUpdate;
+  end;
+
+  IProduct = interface; // Forward
+  IProductUpdate = interface
+    function Edit(const aID: Integer; const aPrice: Currency): IProduct;
+  end;
+  IProduct = interface
+    function GetID: Integer;
+    function GetPrice: Currency;
+    function GetIProductUpdate: IProductUpdate;
+
+    property ID: Integer read GetID;
+    property Price: Currency read GetPrice;
+
+    property New: IProductUpdate read GetIProductUpdate;
+  end;
+
+  IClient = interface; // Forward
+  IClientUpdate = interface
+    function Edit(const aName: string; const aAge: Integer): IClient;
+  end;
+  IClient = interface
+    function GetName: string;
+    function GetAge: Integer;
+    function GetIClientUpdate: IClientUpdate;
+
+    property Name: string read GetName;
+    property Age: Integer read GetAge;
+
+    property New: IClientUpdate read GetIClientUpdate;
+  end;
+
+// Compare Custom Records <Helper function>
+function CompareCustomRecord(const R1, R2: ICustomRecord): Integer;
+
+// Compare Products by thier Prices <Helper function>
+function CompareProductByPrice(const P1, P2: IProduct): Integer;
+
+// Compare Clients by thier Ages <Helper function>
+function CompareClientByAge(const C1, C2: IClient): Integer;
+
+// points comparison <Helper functions>
+function ComparePoints(const P1, P2: TPoint): Integer; overload;
+function ComparePoints(const P1, P2: TPointF): Integer; overload;
+
+// Returns a custom comparer for TPoint
+function PointComparer: IComparer<TPoint>;
+
+function GetTCustomRecord(const aName: string; aValue: Integer): ICustomRecord;
+function GetTProduct(aID: Integer; aPrice: Currency): IProduct;
+function GetTClient(const aName: string; aAge: Integer): IClient;
+
+implementation
+uses
+  System.Math;
+
+type
+  TCustomRecord = class(TInterfacedObject, ICustomRecord, ICustomRecordUpdate)
+  strict private
+    fName: string;
+    fValue: Integer;
+    function GetName: string;
+    function GetValue: Integer;
+    function GetCustomRecordupdate: ICustomRecordUpdate;
+    function Edit(const aName: string; const aValue: Integer): ICustomRecord;
+  public
+    constructor Create(const aName: string; aValue: Integer);
+  end;
+
+  TProduct = class(TInterfacedObject, IProduct, IProductUpdate)
+  private
+    fID: Integer;
+    fPrice: Currency;
+    function GetID: Integer;
+    function GetPrice: Currency;
+    function GetIProductUpdate: IProductUpdate;
+    function Edit(const aID: Integer; const aPrice: Currency): IProduct;
+  public
+    constructor Create(aID: Integer; aPrice: Currency);
+  end;
+
+  TClient = class(TInterfacedObject, IClient, IClientUpdate)
+  private
+    fName: string;
+    fAge: Integer;
+    function GetName: string;
+    function GetAge: Integer;
+    function GetIClientUpdate: IClientUpdate;
+    function Edit(const aName: string; const aAge: Integer): IClient;
+  public
+    constructor Create(const aName: string; aAge: Integer);
+  end;
+
+function GetTCustomRecord(const aName: string; aValue: Integer): ICustomRecord;
+begin
+  Result := TCustomRecord.Create(aName, aValue);
+end;
+
+function GetTProduct(aID: Integer; aPrice: Currency): IProduct;
+begin
+  Result := TProduct.Create(aID, aPrice);
+end;
+
+function GetTClient(const aName: string; aAge: Integer): IClient;
+begin
+  Result := TClient.Create(aName, aAge);
+end;
+
+{$REGION '  Points Comparer & Helper Functions .. '}
+function ComparePoints(const P1, P2: TPoint): Integer;
+begin
+  if P1.X < P2.X then
+    Exit(-1)
+  else if P1.X > P2.X then
+    Exit(1);
+
+  if P1.Y < P2.Y then
+    Exit(-1)
+  else if P1.Y > P2.Y then
+    Exit(1);
+
+  Result := 0; // Points are equal
+end;
+
+function ComparePoints(const P1, P2: TPointF): Integer;
+begin
+  if P1.X <> P2.X then
+    Result := Sign(P1.X - P2.X)
+  else
+    Result := Sign(P1.Y - P2.Y);
+end;
+
+function PointComparer: IComparer<TPoint>;
+begin
+  Result := TComparer<TPoint>.Construct(
+    function(const P1, P2: TPoint): Integer
+    begin
+      Result := ComparePoints(P1, P2);
+    end
+  );
+end;
+{$ENDREGION}
+
+{ Helper CustomRecord function }
+
+function CompareCustomRecord(const R1, R2: ICustomRecord): Integer;
+begin
+  Result := R1.Value - R2.Value;
+end;
+
+{ Helper ProductByPrice function }
+
+function CompareProductByPrice(const P1, P2: IProduct): Integer;
+begin
+  if P1.Price < P2.Price then
+    Result := -1
+  else if P1.Price > P2.Price then
+    Result := 1
+  else
+    Result := 0;
+end;
+
+{ Helper ClientByAge function }
+
+function CompareClientByAge(const C1, C2: IClient): Integer;
+begin
+  Result := C1.Age - C2.Age;
+end;
+
+{ TCustomRecord }
+
+{$REGION '  TCustomRecord .. '}
+constructor TCustomRecord.Create(const aName: string; aValue: Integer);
+begin
+  fName  := aName;
+  fValue := aValue;
+end;
+
+function TCustomRecord.GetName: string;
+begin
+  Result := fName;
+end;
+
+function TCustomRecord.GetValue: Integer;
+begin
+  Result := fValue;
+end;
+
+function TCustomRecord.GetCustomRecordupdate: ICustomRecordUpdate;
+begin
+  Result := Self as ICustomRecordUpdate;
+end;
+
+function TCustomRecord.Edit(const aName: string;
+  const aValue: Integer): ICustomRecord;
+begin
+  fName  := aName;
+  fValue := aValue;
+end;
+{$ENDREGION}
+
+{ TProduct }
+
+{$REGION '  TProduct .. '}
+constructor TProduct.Create(aID: Integer; aPrice: Currency);
+begin
+  fID    := aID;
+  fPrice := aPrice;
+end;
+
+function TProduct.GetID: Integer;
+begin
+  Result := fID;
+end;
+
+function TProduct.GetPrice: Currency;
+begin
+  Result := fPrice;
+end;
+
+function TProduct.GetIProductUpdate: IProductUpdate;
+begin
+  Result := Self as IProductUpdate;
+end;
+
+function TProduct.Edit(const aID: Integer; const aPrice: Currency): IProduct;
+begin
+  fID    := aID;
+  fPrice := aPrice;
+end;
+{$ENDREGION}
+
+{ TClient }
+
+{$REGION '  TClient .. '}
+constructor TClient.Create(const aName: string; aAge: Integer);
+begin
+  fName := aName;
+  fAge  := aAge;
+end;
+
+function TClient.GetName: string;
+begin
+  Result := fName;
+end;
+
+function TClient.GetAge: Integer;
+begin
+  Result := fAge;
+end;
+
+function TClient.GetIClientUpdate: IClientUpdate;
+begin
+  Result := Self as IClientUpdate;
+end;
+
+function TClient.Edit(const aName: string; const aAge: Integer): IClient;
+begin
+  fName := aName;
+  fAge  := aAge;
+end;
+{$ENDREGION}
+
+end.
+```
 ## Extensibility
 
 You can easily extend `TRange<T>` to support:
