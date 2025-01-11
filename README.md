@@ -1,11 +1,11 @@
-# TRangeChecker (TRange<T>)  
+# TRange<T> 
 
-Delphi TRange Checker (clean design, easy to extend comparers)  
+Delphi TRange<T> Checker (clean design, easy to extend comparers)  
  ----  
  **Output Result:** 
  ![](https://github.com/mben-dz/TRangeCheck/blob/main/OutputResults.jpg)  
  ---  
-# TRangeChecker for Delphi
+# TRange<T> for Delphi
 
 A simple, generic, and extensible range checker for Delphi, supporting numeric, date, and other types. This class allows you to check whether a given value lies within a specified range, with support for both inclusive and exclusive ranges.
 
